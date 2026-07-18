@@ -41,8 +41,20 @@ const attackSchema = new mongoose.Schema({
 
 const Attack = mongoose.model('Attack', attackSchema);
 
-// --- API ENDPOINT ---
-// The Python Honeypot will send a POST request here when it catches a hacker
+// --- API ENDPOINTS ---
+
+// 1. Fetch historical attacks when the dashboard loads
+app.get('/api/attacks', async (req, res) => {
+  try {
+    // Get the 50 most recent attacks, sorted by newest first
+    const attacks = await Attack.find().sort({ timestamp: -1 }).limit(50);
+    res.status(200).json(attacks);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch past attacks" });
+  }
+});
+
+// 2. The Python Honeypot will send a POST request here when it catches a hacker
 app.post('/api/attack', async (req, res) => {
   try {
     const { ip, username, passwordTried } = req.body;

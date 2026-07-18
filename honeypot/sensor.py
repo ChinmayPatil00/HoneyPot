@@ -37,14 +37,23 @@ class SSHServer(paramiko.ServerInterface):
         print(f"    User: {username}")
         print(f"    Pass: {password}")
         
-        # Send the stolen credentials to our Node.js Backend API
-        payload = {
-            "ip": self.client_ip,
-            "username": username,
-            "passwordTried": password
-        }
+        # Send the stolen credentials to our Node.js Backend
         try:
-            requests.post(BACKEND_API_URL, json=payload, timeout=2)
+            # If the user attacks from localhost, we want to grab their REAL internet IP 
+            # so the dashboard shows their actual city instead of a fallback.
+            actual_ip = self.client_ip
+            if actual_ip == "127.0.0.1":
+                try:
+                    actual_ip = requests.get('https://api.ipify.org', timeout=3).text
+                except Exception:
+                    pass
+
+            payload = {
+                "ip": actual_ip,
+                "username": username,
+                "passwordTried": password
+            }
+            requests.post(BACKEND_API_URL, json=payload, timeout=5)
         except Exception as e:
             print(f"[-] Failed to send attack to backend (is the backend running?): {e}")
 

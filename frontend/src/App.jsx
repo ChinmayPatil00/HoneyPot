@@ -15,6 +15,18 @@ function App() {
   const [attacks, setAttacks] = useState([]);
   const [isConnected, setIsConnected] = useState(socket.connected);
 
+  // Fetch past attacks when the page first loads!
+  useEffect(() => {
+    fetch(`${BACKEND_URL}/api/attacks`)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setAttacks(data);
+        }
+      })
+      .catch(err => console.error("Error fetching past attacks:", err));
+  }, []);
+
   useEffect(() => {
     // Track connection status
     socket.on("connect", () => setIsConnected(true));
