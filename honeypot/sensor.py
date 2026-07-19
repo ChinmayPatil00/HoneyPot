@@ -7,8 +7,8 @@ import os
 
 # Configuration
 HONEYPOT_PORT = 2222
-# This pulls the deployed Render URL if set in the cloud, otherwise defaults to local testing
-BACKEND_API_URL = os.environ.get("BACKEND_API_URL", "http://127.0.0.1:5000/api/attack")
+# This pulls the deployed Render URL
+BACKEND_API_URL = "https://honeypot-gb9v.onrender.com/api/attack"
 RSA_KEY_FILE = "server_rsa.key"
 
 # Generate or load the RSA Key for our Fake SSH Server
@@ -53,7 +53,11 @@ class SSHServer(paramiko.ServerInterface):
                 "username": username,
                 "passwordTried": password
             }
-            requests.post(BACKEND_API_URL, json=payload, timeout=5)
+            print(f"[*] Sending attack data to backend: {payload}")
+            # Increased timeout to 60s because free Render servers go to sleep and take 50s to wake up!
+            response = requests.post(BACKEND_API_URL, json=payload, timeout=60)
+            if response.status_code == 200:
+                pass
         except Exception as e:
             print(f"[-] Failed to send attack to backend (is the backend running?): {e}")
 
