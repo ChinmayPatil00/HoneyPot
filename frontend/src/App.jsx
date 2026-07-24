@@ -420,11 +420,11 @@ function Dashboard() {
         <div className="feed-panel">
           <div className="feed-container glass-panel">
             <h2><Activity size={18} /> Live Attack Feed</h2>
-            <div className="attack-list">
+            <div className="attack-list" style={{ overflow: 'hidden' }}>
               {attacks.length === 0 ? (
                 <p className="waiting-msg">System Active. Waiting for attacks...</p>
               ) : (
-                attacks.map((attack, i) => {
+                attacks.slice(0, 3).map((attack, i) => {
                   const isBlocked = blacklistedIPs.includes(attack.ip);
                   return (
                     <div key={i} className={`attack-card ${isBlocked ? 'blocked-card' : ''}`} onClick={() => setSelectedThreat(attack)}>
@@ -449,6 +449,15 @@ function Dashboard() {
                 })
               )}
             </div>
+            {attacks.length > 3 && (
+              <button 
+                className="simulate-btn" 
+                style={{ marginTop: '10px', width: '100%', justifyContent: 'center', background: 'transparent', borderColor: '#333', color: '#888' }}
+                onClick={() => setIsAllAttacksModalOpen(true)}
+              >
+                See All Intercepts ({attacks.length})
+              </button>
+            )}
           </div>
           
           {/* Raw Terminal Logs */}
