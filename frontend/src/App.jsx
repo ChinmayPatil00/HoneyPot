@@ -9,8 +9,8 @@ import "./App.css";
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://127.0.0.1:5000";
 
-// Vibrant 'Toy-like' Primary Colors for the Pie Chart
-const COLORS = ['#FF1493', '#00E5FF', '#FFEB3B', '#39FF14', '#FF5722'];
+// Professional Cybersecurity Color Palette for Pie Chart
+const COLORS = ['#00d2ff', '#3a7bd5', '#8e44ad', '#e74c3c', '#f39c12'];
 
 
 const playAudio = (type) => {
