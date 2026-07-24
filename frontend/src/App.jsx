@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 import { io } from "socket.io-client";
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { ShieldAlert, Activity, Globe, MapPin, X, ShieldCheck, Terminal, Ban, Smartphone } from "lucide-react";
+import { ShieldAlert, Activity, Globe, MapPin, X, ShieldCheck, Terminal, Ban, Smartphone, Download, Cpu, Skull } from "lucide-react";
 import QRCode from "react-qr-code";
 import "./App.css";
 
@@ -11,6 +11,40 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://127.0.0.1:5000";
 
 // Vibrant 'Toy-like' Primary Colors for the Pie Chart
 const COLORS = ['#FF1493', '#00E5FF', '#FFEB3B', '#39FF14', '#FF5722'];
+
+
+const playAudio = (type) => {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    
+    if (type === 'beep') {
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+      gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + 0.1);
+    } else if (type === 'alarm') {
+      oscillator.type = 'square';
+      oscillator.frequency.setValueAtTime(400, audioCtx.currentTime);
+      oscillator.frequency.linearRampToValueAtTime(300, audioCtx.currentTime + 0.3);
+      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + 0.3);
+    }
+  } catch(e) { }
+};
+
+const getAIProfile = (pass) => {
+  if (['123456', 'password', '12345678'].includes(pass)) return { label: 'LOW SKILL BOT', color: '#888' };
+  if (['admin', 'root'].includes(pass)) return { label: 'BRUTE FORCE', color: '#FF8800' };
+  return { label: 'TARGETED THREAT', color: '#FF4444' };
+};
 
 // --- ATTACKER PORTAL COMPONENT ---
 function AttackerPortal() {
@@ -96,8 +130,63 @@ function Dashboard() {
   const [isSimulating, setIsSimulating] = useState(false);
   
   // New State for Blocked IPs
+
   const [blacklistedIPs, setBlacklistedIPs] = useState([]);
   const [isAllAttacksModalOpen, setIsAllAttacksModalOpen] = useState(false);
+  const [isAutoSimulating, setIsAutoSimulating] = useState(false);
+  const [cpuUsage, setCpuUsage] = useState(5);
+  const [isLockdown, setIsLockdown] = useState(false);
+
+  // CPU Decay
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCpuUsage(prev => (prev > 5 ? Math.max(5, prev - Math.random() * 2) : 5));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Auto Simulator
+  useEffect(() => {
+    let interval;
+    if (isAutoSimulating && !isLockdown) {
+      interval = setInterval(() => {
+        const randomIP = `${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`;
+        const randomCities = [
+          {c:"Moscow", co:"Russia", lat: 55.75, lon: 37.61}, 
+          {c:"Beijing", co:"China", lat: 39.9, lon: 116.4},
+          {c:"Pyongyang", co:"North Korea", lat: 39.02, lon: 125.75},
+          {c:"Tehran", co:"Iran", lat: 35.68, lon: 51.38},
+          {c:"New York", co:"USA", lat: 40.71, lon: -74.00},
+          {c:"London", co:"UK", lat: 51.50, lon: -0.12},
+          {c:"Mumbai", co:"India", lat: 19.07, lon: 72.87},
+          {c:"Tokyo", co:"Japan", lat: 35.67, lon: 139.65},
+          {c:"Sydney", co:"Australia", lat: -33.86, lon: 151.20},
+          {c:"Sao Paulo", co:"Brazil", lat: -23.55, lon: -46.63}
+        ];
+        const rc = randomCities[Math.floor(Math.random()*randomCities.length)];
+        const passwords = ["123456", "admin", "root", "password", "db_backup_2026", "secret123"];
+        const pass = passwords[Math.floor(Math.random()*passwords.length)];
+        
+        const newAttack = {
+          ip: randomIP,
+          username: "admin",
+          passwordTried: pass,
+          city: rc.c,
+          country: rc.co,
+          lat: rc.lat,
+          lon: rc.lon,
+          timestamp: new Date().toISOString()
+        };
+        
+        setAttacks(prev => [newAttack, ...prev]);
+        setCpuUsage(prev => Math.min(prev + (Math.random() * 15 + 5), 100));
+        setLogs(prev => [...prev, `[SIM] INTRUSION DETECTED: ${randomIP} on port 22`].slice(-50));
+        playAudio('beep');
+      }, 1500); 
+    }
+    return () => clearInterval(interval);
+  }, [isAutoSimulating, isLockdown]);
+
   
   // Terminal logs state
   const [logs, setLogs] = useState([]);
@@ -207,7 +296,7 @@ function Dashboard() {
 
         <div className="header-actions">
           <div className="status-badge">
-             {isConnected ? <span className="connected">🟢 Live</span> : <span className="disconnected">🔴 Offline</span>}
+             {isConnected ? <span className="connected">ðŸŸ¢ Live</span> : <span className="disconnected">ðŸ”´ Offline</span>}
           </div>
           <button 
             className={`simulate-btn ${isSimulating ? 'simulating' : ''}`} 
@@ -269,7 +358,12 @@ function Dashboard() {
           </div>
         </div>
         
-        <div className="stats-card glass-panel">
+        
+        <div className="stats-card glass-panel" style={{display: 'flex', flexDirection: 'row', gap: '30px', justifyContent: 'space-around'}}>
+           <div className="stat-box">
+             <h4>CPU Load</h4>
+             <span className="stat-value" style={{color: cpuUsage > 80 ? 'red' : cpuUsage > 50 ? 'orange' : '#00C851'}}>{Math.round(cpuUsage)}%</span>
+           </div>
            <div className="stat-box">
              <h4>Total Intercepts</h4>
              <span className="stat-value">{attacks.length}</span>
@@ -331,7 +425,15 @@ function Dashboard() {
                       </div>
                       <div className="attack-details">
                         <p><span>User:</span> {attack.username}</p>
-                        <p><span>Pass:</span> <span className="password">{attack.passwordTried}</span></p>
+
+                        <p>
+                          <span>Pass:</span> <span className="password">{attack.passwordTried}</span>
+                          {(() => {
+                             const prof = getAIProfile(attack.passwordTried);
+                             return <span className="ai-badge" style={{color: prof.color, border: `1px solid ${prof.color}`, fontSize: '0.65rem', padding: '2px 4px', borderRadius: '4px', marginLeft: '8px', letterSpacing: '0.5px'}}>{prof.label}</span>;
+                          })()}
+                        </p>
+
                       </div>
                     </div>
                   );
@@ -413,6 +515,16 @@ function Dashboard() {
               })}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Nuclear Lockdown Overlay */}
+      {isLockdown && (
+        <div className="lockdown-overlay">
+          <Skull size={120} color="red" style={{marginBottom: '20px'}} />
+          <h1>SYSTEM ISOLATED</h1>
+          <p>ALL INBOUND CONNECTIONS TERMINATED</p>
+          <button className="simulate-btn" style={{marginTop: '30px', borderColor:'white', color:'white', background: 'transparent'}} onClick={() => {setIsLockdown(false); setCpuUsage(5);}}>RESTORE SYSTEM</button>
         </div>
       )}
     </div>
