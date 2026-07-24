@@ -189,8 +189,7 @@ function App() {
             </Geographies>
             {attacks.map((attack, index) => (
               <Marker key={index} coordinates={[attack.lon, attack.lat]}>
-                <circle r={4} fill="#FF4444" />
-                <circle r={14} fill="none" stroke="#FF4444" strokeWidth="2" className="pulse-marker" />
+                <circle r={5} fill="#FF4444" className="blink-marker" />
               </Marker>
             ))}
           </ComposableMap>
