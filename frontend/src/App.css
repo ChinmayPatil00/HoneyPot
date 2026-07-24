@@ -120,7 +120,7 @@ body {
 /* Analytics Row */
 .analytics-row {
   display: grid;
-  grid-template-columns: 200px 1fr 1fr minmax(250px, auto);
+  grid-template-columns: 200px 1fr 1fr 180px;
   gap: 1.5rem;
   margin-bottom: 1.5rem;
   flex: 0 0 200px; /* Strict height to prevent overflow */

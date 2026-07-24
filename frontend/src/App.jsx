@@ -323,18 +323,18 @@ function Dashboard() {
       {/* Analytics Row */}
       <div className="analytics-row">
         {/* Audience QR Code Panel */}
-        <div className="qr-card glass-panel" style={{ justifyContent: 'center' }}>
+        <div className="qr-card glass-panel">
           <div className="qr-header">
             <ShieldCheck size={18} color="#00C851"/>
-            <h3>System Overview</h3>
+            <h3>Live Threat Node</h3>
           </div>
-          <div className="qr-body" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '10px', padding: '0 5px' }}>
-            <p style={{ fontSize: '0.85rem', color: '#aaa', lineHeight: '1.5', textAlign: 'left' }}>
-              This node operates as a high-interaction honeypot, engineered to intercept, log, and analyze unauthorized network intrusions in real-time. 
-            </p>
-            <p style={{ fontSize: '0.85rem', color: '#aaa', lineHeight: '1.5', textAlign: 'left' }}>
-              All incoming payloads are securely isolated and profiled by the AI engine to classify global threat actors instantly.
-            </p>
+          <div className="qr-body">
+            <div className="qr-wrapper">
+              <QRCode value={audienceLink} size={100} bgColor="transparent" fgColor="#fff" />
+            </div>
+            <div className="qr-text">
+              <p>Scan to deploy simulated payload</p>
+            </div>
           </div>
         </div>
 
@@ -408,10 +408,14 @@ function Dashboard() {
             </Geographies>
             {attacks.map((attack, index) => {
               const isBlocked = blacklistedIPs.includes(attack.ip);
-              const jitterX = (index % 5) * 1.5 - 3.0;
-              const jitterY = ((index * 3) % 5) * 1.5 - 3.0;
+              
+              // Hash the timestamp and IP to create a deterministic but globally scattered random coordinate for visual impact
+              const hash = (attack.timestamp + attack.ip).split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a }, 0);
+              const scatterLon = (hash % 360) - 180;
+              const scatterLat = ((hash >> 8) % 140) - 70; // Avoid extreme poles
+              
               return (
-                <Marker key={index} coordinates={[attack.lon + jitterX, attack.lat + jitterY]}>
+                <Marker key={index} coordinates={[scatterLon, scatterLat]}>
                   {/* Grey dot if blocked, Red dot if active */}
                   <circle r={5} fill={isBlocked ? "#666666" : "#FF4444"} className={isBlocked ? "" : "blink-marker"} />
                 </Marker>
