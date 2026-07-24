@@ -295,17 +295,26 @@ function Dashboard() {
         </div>
 
         <div className="header-actions">
-          <div className="status-badge">
-             {isConnected ? <span className="connected">ðŸŸ¢ Live</span> : <span className="disconnected">ðŸ”´ Offline</span>}
-          </div>
-          <button 
-            className={`simulate-btn ${isSimulating ? 'simulating' : ''}`} 
-            onClick={handleSimulateAttack}
-            disabled={isSimulating}
-          >
-            <ShieldAlert size={18} />
-            {isSimulating ? 'Launching...' : 'Simulate Cyberattack'}
+          <button className="simulate-btn" onClick={() => setIsAutoSimulating(!isAutoSimulating)}>
+            <Activity size={16} /> {isAutoSimulating ? "Stop Simulation" : "Auto-Simulate Traffic"}
           </button>
+          <button className="simulate-btn" style={{color:'#33B5E5', borderColor:'#33B5E5', background:'rgba(51,181,229,0.1)'}} onClick={() => {
+            let csv = "IP,Username,Password,Country,City,Timestamp\n";
+            attacks.forEach(a => { csv += `${a.ip},${a.username},${a.passwordTried},${a.country},${a.city},${a.timestamp}\n`; });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'Executive_Threat_Report.csv';
+            a.click();
+          }}>
+            <Download size={16} /> Export CSV
+          </button>
+          <button className="simulate-btn" style={{color:'red', borderColor:'red', background:'rgba(255,0,0,0.2)', fontWeight:'bold'}} onClick={() => {setIsLockdown(true); playAudio('alarm');}}>
+            <Skull size={16} /> LOCKDOWN
+          </button>
+          <div className="status-badge">
+             {isConnected ? <span className="connected">🟢 Live</span> : <span className="disconnected">🔴 Offline</span>}
+          </div>
         </div>
       </header>
 
