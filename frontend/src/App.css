@@ -23,8 +23,9 @@ body {
 .dashboard-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  padding: 1rem 2rem;
+  min-height: 100vh;
+  height: auto;
+  padding: 2rem;
   box-sizing: border-box;
   transition: background-image 1s ease;
 }
@@ -120,10 +121,10 @@ body {
 /* Analytics Row */
 .analytics-row {
   display: grid;
-  grid-template-columns: 250px 1fr 1fr 180px;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-  height: 220px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+  min-height: 220px;
 }
 
 /* QR Code Panel */
@@ -210,22 +211,24 @@ body {
 /* Main Content (Map + Feed) */
 .main-content {
   display: flex;
+  flex-wrap: wrap;
   flex: 1;
-  gap: 1.5rem;
-  min-height: 0;
+  gap: 2rem;
+  min-height: 500px;
 }
 
 .map-container {
-  flex: 2;
+  flex: 1 1 600px;
   position: relative;
   overflow: hidden;
+  min-height: 400px;
 }
 
 .feed-panel {
-  flex: 1;
+  flex: 1 1 350px;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
 .feed-container {
