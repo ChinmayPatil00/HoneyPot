@@ -12,6 +12,14 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://127.0.0.1:5000";
 // Professional Cybersecurity Color Palette for Pie Chart
 const COLORS = ['#00d2ff', '#3a7bd5', '#8e44ad', '#e74c3c', '#f39c12'];
 
+const MAJOR_CITIES = [
+  [-74.006, 40.7128], [-0.1276, 51.5074], [139.6917, 35.6895], 
+  [37.6173, 55.7558], [116.4074, 39.9042], [151.2093, -33.8688], 
+  [2.3522, 48.8566], [-118.2437, 34.0522], [13.405, 52.52], 
+  [-43.1729, -22.9068], [103.8198, 1.3521], [28.0473, -26.2041], 
+  [-99.1332, 19.4326], [72.8777, 19.076], [55.2708, 25.2048]
+];
+
 
 const playAudio = (type) => {
   try {
@@ -342,7 +350,7 @@ function Dashboard() {
           <h3><Activity size={18} /> Top 5 Passwords</h3>
           <div className="chart-wrapper">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={topPasswords} layout="vertical" margin={{ left: 30, right: 20 }}>
+              <BarChart data={topPasswords} layout="vertical" margin={{ left: 50, right: 20, top: 10, bottom: 0 }}>
                 <XAxis type="number" hide />
                 <YAxis dataKey="name" type="category" stroke="#888" fontSize={12} tickLine={false} axisLine={false} />
                 <RechartsTooltip cursor={{fill: 'rgba(255,255,255,0.05)'}} contentStyle={{backgroundColor: '#1a1a24', border: '1px solid #333', borderRadius: '8px'}} />
@@ -410,9 +418,10 @@ function Dashboard() {
               const isBlocked = blacklistedIPs.includes(attack.ip);
               
               // Hash the timestamp and IP to create a deterministic but globally scattered random coordinate for visual impact
-              const hash = (attack.timestamp + attack.ip).split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a }, 0);
-              const scatterLon = (hash % 360) - 180;
-              const scatterLat = ((hash >> 8) % 140) - 70; // Avoid extreme poles
+              const hash = Math.abs((attack.timestamp + attack.ip).split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a }, 0));
+              const city = MAJOR_CITIES[hash % MAJOR_CITIES.length];
+              const scatterLon = city[0] + (hash % 20 - 10) * 0.2;
+              const scatterLat = city[1] + ((hash >> 4) % 20 - 10) * 0.2;
               
               return (
                 <Marker key={index} coordinates={[scatterLon, scatterLat]}>
