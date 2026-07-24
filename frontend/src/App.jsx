@@ -256,9 +256,9 @@ function Dashboard() {
           <div className="chart-wrapper">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={topCountries} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={5} dataKey="value" stroke="none">
+                <Pie data={topCountries} cx="50%" cy="50%" innerRadius={45} outerRadius={75} cornerRadius={8} paddingAngle={4} dataKey="value" stroke="none">
                   {topCountries.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} style={{ filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.4))' }} />
                   ))}
                 </Pie>
                 <RechartsTooltip contentStyle={{backgroundColor: '#1a1a24', border: '1px solid #333', borderRadius: '8px', color: '#fff'}} itemStyle={{color: '#fff'}} />
@@ -319,28 +319,21 @@ function Dashboard() {
               {attacks.length === 0 ? (
                 <p className="waiting-msg">System Active. Waiting for attacks...</p>
               ) : (
-                <>
-                  {attacks.slice(0, 5).map((attack, i) => {
-                    const isBlocked = blacklistedIPs.includes(attack.ip);
-                    return (
-                      <div key={i} className={`attack-card ${isBlocked ? 'blocked-card' : ''}`} onClick={() => setSelectedThreat(attack)}>
-                        <div className="attack-header">
-                          <span className="ip">{attack.ip} {isBlocked && <span className="blocked-tag">[BLOCKED]</span>}</span>
-                          <span className="time">{new Date(attack.timestamp).toLocaleTimeString()}</span>
-                        </div>
-                        <div className="attack-details">
-                          <p><span>User:</span> {attack.username}</p>
-                          <p><span>Pass:</span> <span className="password">{attack.passwordTried}</span></p>
-                        </div>
+                attacks.map((attack, i) => {
+                  const isBlocked = blacklistedIPs.includes(attack.ip);
+                  return (
+                    <div key={i} className={`attack-card ${isBlocked ? 'blocked-card' : ''}`} onClick={() => setSelectedThreat(attack)}>
+                      <div className="attack-header">
+                        <span className="ip">{attack.ip} {isBlocked && <span className="blocked-tag">[BLOCKED]</span>}</span>
+                        <span className="time">{new Date(attack.timestamp).toLocaleTimeString()}</span>
                       </div>
-                    );
-                  })}
-                  {attacks.length > 5 && (
-                    <button className="see-more-btn" onClick={() => setIsAllAttacksModalOpen(true)}>
-                      See All Attacks ({attacks.length})
-                    </button>
-                  )}
-                </>
+                      <div className="attack-details">
+                        <p><span>User:</span> {attack.username}</p>
+                        <p><span>Pass:</span> <span className="password">{attack.passwordTried}</span></p>
+                      </div>
+                    </div>
+                  );
+                })
               )}
             </div>
           </div>
