@@ -24,7 +24,7 @@ const playAudio = (type) => {
     if (type === 'beep') {
       oscillator.type = 'sine';
       oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
-      gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+      gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
       oscillator.start();
       oscillator.stop(audioCtx.currentTime + 0.1);
@@ -32,7 +32,7 @@ const playAudio = (type) => {
       oscillator.type = 'square';
       oscillator.frequency.setValueAtTime(400, audioCtx.currentTime);
       oscillator.frequency.linearRampToValueAtTime(300, audioCtx.currentTime + 0.3);
-      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gainNode.gain.setValueAtTime(0.4, audioCtx.currentTime);
       gainNode.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
       oscillator.start();
       oscillator.stop(audioCtx.currentTime + 0.3);
