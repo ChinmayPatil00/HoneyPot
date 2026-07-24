@@ -1,48 +1,145 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 import { io } from "socket.io-client";
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { ShieldAlert, Activity, Globe, MapPin, X, ShieldCheck } from "lucide-react";
+import { ShieldAlert, Activity, Globe, MapPin, X, ShieldCheck, Terminal, Ban, Smartphone } from "lucide-react";
+import QRCode from "react-qr-code";
 import "./App.css";
 
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://127.0.0.1:5000";
-const socket = io(BACKEND_URL);
 
 // Colors for Pie Chart
 const COLORS = ['#FF4444', '#FF8800', '#FFCC00', '#00C851', '#33B5E5'];
 
-function App() {
+// --- ATTACKER PORTAL COMPONENT ---
+// This is what the audience sees on their phone when they scan the QR code!
+function AttackerPortal() {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [status, setStatus] = useState("ready");
+
+  const launchAttack = async (e) => {
+    e.preventDefault();
+    if (!username || !password) return;
+    setStatus("attacking");
+
+    // We pick a random global IP for the audience member so they appear on the world map!
+    const global_ips = [
+      "46.17.40.1", "176.12.34.12", "114.114.114.114", "177.20.10.1", 
+      "192.200.1.1", "144.76.10.1", "212.58.244.20", "133.1.2.3"
+    ];
+    
+    const payload = {
+      ip: global_ips[Math.floor(Math.random() * global_ips.length)],
+      username: username,
+      passwordTried: password
+    };
+
+    try {
+      await fetch(`${BACKEND_URL}/api/attack`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      setStatus("success");
+      setTimeout(() => setStatus("ready"), 3000);
+    } catch (err) {
+      setStatus("error");
+      setTimeout(() => setStatus("ready"), 3000);
+    }
+  };
+
+  return (
+    <div className="attacker-portal">
+      <div className="hacker-box">
+        <ShieldAlert size={48} color="#FF4444" />
+        <h1>Target Acquired</h1>
+        <p>You are about to launch a cyberattack against the Honeypot.</p>
+        
+        <form onSubmit={launchAttack} className="hacker-form">
+          <input 
+            type="text" 
+            placeholder="Username (e.g. root)" 
+            value={username} 
+            onChange={e => setUsername(e.target.value)}
+            disabled={status !== 'ready'}
+          />
+          <input 
+            type="text" 
+            placeholder="Password (e.g. hacker123)" 
+            value={password} 
+            onChange={e => setPassword(e.target.value)}
+            disabled={status !== 'ready'}
+          />
+          <button type="submit" disabled={status !== 'ready'} className={status}>
+            {status === 'ready' && "LAUNCH ATTACK"}
+            {status === 'attacking' && "INJECTING PAYLOAD..."}
+            {status === 'success' && "ATTACK LOGGED ON MAP!"}
+            {status === 'error' && "CONNECTION FAILED"}
+          </button>
+        </form>
+        <p className="hint">Look at the projector screen to see your attack hit!</p>
+      </div>
+    </div>
+  );
+}
+
+
+// --- MAIN DASHBOARD COMPONENT ---
+function Dashboard() {
   const [attacks, setAttacks] = useState([]);
-  const [isConnected, setIsConnected] = useState(socket.connected);
+  const [isConnected, setIsConnected] = useState(false);
   const [selectedThreat, setSelectedThreat] = useState(null);
   const [isSimulating, setIsSimulating] = useState(false);
+  
+  // New State for Blocked IPs
+  const [blacklistedIPs, setBlacklistedIPs] = useState([]);
+  
+  // Terminal logs state
+  const [logs, setLogs] = useState([]);
+  const terminalRef = useRef(null);
 
   useEffect(() => {
+    const socket = io(BACKEND_URL);
+    socket.on("connect", () => setIsConnected(true));
+    socket.on("disconnect", () => setIsConnected(false));
+    
+    socket.on("new_attack", (data) => {
+      setAttacks((prev) => [data, ...prev].slice(0, 100));
+      
+      // Add raw log to the terminal
+      const rawLog = `[${new Date().toLocaleTimeString()}] INBOUND TCP 22 SYN_RCVD src=${data.ip} user=${data.username} pass=${data.passwordTried} | REJECTED`;
+      setLogs(prev => [...prev, rawLog].slice(-20));
+    });
+
     fetch(`${BACKEND_URL}/api/attacks`)
       .then(res => res.json())
       .then(data => {
-        if (Array.isArray(data)) {
-          setAttacks(data);
-        }
+        if (Array.isArray(data)) setAttacks(data);
       })
-      .catch(err => console.error("Error fetching past attacks:", err));
+      .catch(err => console.error(err));
+
+    return () => socket.disconnect();
   }, []);
 
+  // Auto-scroll terminal
   useEffect(() => {
-    socket.on("connect", () => setIsConnected(true));
-    socket.on("disconnect", () => setIsConnected(false));
-    socket.on("new_attack", (data) => {
-      setAttacks((prevAttacks) => [data, ...prevAttacks].slice(0, 100));
-    });
-    return () => {
-      socket.off("connect");
-      socket.off("disconnect");
-      socket.off("new_attack");
-    };
-  }, []);
+    if (terminalRef.current) {
+      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+    }
+  }, [logs]);
 
-  // Compute Top 5 Passwords
+  // Compute DEFCON Level (DEFCON 1 if attack in last 10 seconds)
+  const defconLevel = useMemo(() => {
+    if (attacks.length === 0) return 5;
+    const timeSinceLastAttack = Date.now() - new Date(attacks[0].timestamp).getTime();
+    if (timeSinceLastAttack < 10000) return 1;
+    if (timeSinceLastAttack < 30000) return 3;
+    return 5;
+  }, [attacks]);
+
+  // Compute Analytics
   const topPasswords = useMemo(() => {
     const counts = {};
     attacks.forEach(a => counts[a.passwordTried] = (counts[a.passwordTried] || 0) + 1);
@@ -52,7 +149,6 @@ function App() {
       .slice(0, 5);
   }, [attacks]);
 
-  // Compute Top 5 Countries
   const topCountries = useMemo(() => {
     const counts = {};
     attacks.forEach(a => {
@@ -67,46 +163,45 @@ function App() {
 
   const handleSimulateAttack = async () => {
     setIsSimulating(true);
-    
-    const global_ips = [
-      "46.17.40.1", "176.12.34.12", "95.108.1.1", 
-      "114.114.114.114", "220.181.38.148", "211.162.240.1",
-      "177.20.10.1", "187.10.20.30",
-      "192.200.1.1", "64.233.160.1", "198.51.100.1",
-      "144.76.10.1", "88.198.50.1",
-      "212.58.244.20", "81.134.202.29",
-      "133.1.2.3", "124.83.159.212"
-    ];
-    const passwords = ["123456", "admin", "root", "password", "qwerty", "12345678", "hacker123", "letmein"];
-    const usernames = ["root", "admin", "postgres", "ubuntu", "test"];
-
+    const global_ips = ["46.17.40.1", "114.114.114.114", "177.20.10.1", "192.200.1.1", "144.76.10.1"];
     const payload = {
       ip: global_ips[Math.floor(Math.random() * global_ips.length)],
-      username: usernames[Math.floor(Math.random() * usernames.length)],
-      passwordTried: passwords[Math.floor(Math.random() * passwords.length)]
+      username: "admin",
+      passwordTried: "123456"
     };
-
     try {
       await fetch(`${BACKEND_URL}/api/attack`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
-    } catch (e) {
-      console.error("Simulation failed", e);
-    }
-    
-    // Add small delay to let the animation show
+    } catch (e) { }
     setTimeout(() => setIsSimulating(false), 800);
   };
 
+  const blockIP = (ip) => {
+    if (!blacklistedIPs.includes(ip)) {
+      setBlacklistedIPs([...blacklistedIPs, ip]);
+      setLogs(prev => [...prev, `[SYSTEM] FIREWALL RULE ADDED: DROP src=${ip}`].slice(-20));
+    }
+    setSelectedThreat(null);
+  };
+
+  const audienceLink = window.location.origin + '/attack';
+
   return (
-    <div className="dashboard-container">
+    <div className={`dashboard-container defcon-${defconLevel}`}>
       <header className="header glass-panel">
         <div className="header-title">
           <ShieldCheck size={32} color="#00C851" />
           <h1>Global Threat Intelligence Network</h1>
         </div>
+        
+        {/* DEFCON Indicator */}
+        <div className={`defcon-badge level-${defconLevel}`}>
+          DEFCON {defconLevel}
+        </div>
+
         <div className="header-actions">
           <div className="status-badge">
              {isConnected ? <span className="connected">🟢 Live</span> : <span className="disconnected">🔴 Offline</span>}
@@ -124,8 +219,25 @@ function App() {
 
       {/* Analytics Row */}
       <div className="analytics-row">
+        {/* Audience QR Code Panel */}
+        <div className="qr-card glass-panel">
+          <div className="qr-header">
+            <Smartphone size={18} color="#00C851"/>
+            <h3>Audience Attack Portal</h3>
+          </div>
+          <div className="qr-body">
+            <div className="qr-wrapper">
+              <QRCode value={audienceLink} size={100} bgColor="transparent" fgColor="#fff" />
+            </div>
+            <div className="qr-text">
+              <p>Scan to attack the server!</p>
+              <a href="/attack" target="_blank" rel="noreferrer">Open Portal</a>
+            </div>
+          </div>
+        </div>
+
         <div className="chart-card glass-panel">
-          <h3><Activity size={18} /> Top 5 Passwords Guessed</h3>
+          <h3><Activity size={18} /> Top 5 Passwords</h3>
           <div className="chart-wrapper">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={topPasswords} layout="vertical" margin={{ left: 30, right: 20 }}>
@@ -139,7 +251,7 @@ function App() {
         </div>
 
         <div className="chart-card glass-panel">
-          <h3><Globe size={18} /> Top Attacking Countries</h3>
+          <h3><Globe size={18} /> Top Countries</h3>
           <div className="chart-wrapper">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -160,8 +272,8 @@ function App() {
              <span className="stat-value">{attacks.length}</span>
            </div>
            <div className="stat-box">
-             <h4>Unique IPs</h4>
-             <span className="stat-value">{new Set(attacks.map(a => a.ip)).size}</span>
+             <h4>Blocked IPs</h4>
+             <span className="stat-value" style={{color: '#888'}}>{blacklistedIPs.length}</span>
            </div>
         </div>
       </div>
@@ -187,33 +299,52 @@ function App() {
                 ))
               }
             </Geographies>
-            {attacks.map((attack, index) => (
-              <Marker key={index} coordinates={[attack.lon, attack.lat]}>
-                <circle r={5} fill="#FF4444" className="blink-marker" />
-              </Marker>
-            ))}
+            {attacks.map((attack, index) => {
+              const isBlocked = blacklistedIPs.includes(attack.ip);
+              return (
+                <Marker key={index} coordinates={[attack.lon, attack.lat]}>
+                  {/* Grey dot if blocked, Red dot if active */}
+                  <circle r={5} fill={isBlocked ? "#666666" : "#FF4444"} className={isBlocked ? "" : "blink-marker"} />
+                </Marker>
+              );
+            })}
           </ComposableMap>
         </div>
 
-        <div className="feed-container glass-panel">
-          <h2><Activity size={18} /> Live Attack Feed</h2>
-          <div className="attack-list">
-            {attacks.length === 0 ? (
-              <p className="waiting-msg">System Active. Waiting for attacks...</p>
-            ) : (
-              attacks.map((attack, i) => (
-                <div key={i} className="attack-card" onClick={() => setSelectedThreat(attack)}>
-                  <div className="attack-header">
-                    <span className="ip">{attack.ip}</span>
-                    <span className="time">{new Date(attack.timestamp).toLocaleTimeString()}</span>
-                  </div>
-                  <div className="attack-details">
-                    <p><span>User:</span> {attack.username}</p>
-                    <p><span>Pass:</span> <span className="password">{attack.passwordTried}</span></p>
-                  </div>
-                </div>
-              ))
-            )}
+        <div className="feed-panel">
+          <div className="feed-container glass-panel">
+            <h2><Activity size={18} /> Live Attack Feed</h2>
+            <div className="attack-list">
+              {attacks.length === 0 ? (
+                <p className="waiting-msg">System Active. Waiting for attacks...</p>
+              ) : (
+                attacks.map((attack, i) => {
+                  const isBlocked = blacklistedIPs.includes(attack.ip);
+                  return (
+                    <div key={i} className={`attack-card ${isBlocked ? 'blocked-card' : ''}`} onClick={() => setSelectedThreat(attack)}>
+                      <div className="attack-header">
+                        <span className="ip">{attack.ip} {isBlocked && <span className="blocked-tag">[BLOCKED]</span>}</span>
+                        <span className="time">{new Date(attack.timestamp).toLocaleTimeString()}</span>
+                      </div>
+                      <div className="attack-details">
+                        <p><span>User:</span> {attack.username}</p>
+                        <p><span>Pass:</span> <span className="password">{attack.passwordTried}</span></p>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+          
+          {/* Raw Terminal Logs */}
+          <div className="terminal-container glass-panel">
+            <div className="terminal-header"><Terminal size={14}/> Raw Socket Intercepts</div>
+            <div className="terminal-body" ref={terminalRef}>
+               {logs.length === 0 ? "Listening on 0.0.0.0:2222..." : logs.map((log, i) => (
+                 <div key={i} className="log-line">{log}</div>
+               ))}
+            </div>
           </div>
         </div>
       </div>
@@ -224,30 +355,44 @@ function App() {
           <div className="modal-content glass-panel" onClick={(e) => e.stopPropagation()}>
             <button className="close-btn" onClick={() => setSelectedThreat(null)}><X size={20} /></button>
             <div className="modal-header">
-              <ShieldAlert size={32} color="#FF4444" />
-              <h2>Threat Analysis Report</h2>
+              {blacklistedIPs.includes(selectedThreat.ip) ? (
+                <Ban size={32} color="#888" />
+              ) : (
+                <ShieldAlert size={32} color="#FF4444" />
+              )}
+              <h2>{blacklistedIPs.includes(selectedThreat.ip) ? "Threat Neutralized" : "Threat Analysis Report"}</h2>
             </div>
             <div className="modal-body">
               <div className="info-row"><MapPin size={16}/> <strong>Origin:</strong> {selectedThreat.city}, {selectedThreat.country}</div>
               <div className="info-row"><Globe size={16}/> <strong>IP Address:</strong> <span className="ip-highlight">{selectedThreat.ip}</span></div>
-              <div className="info-row"><Activity size={16}/> <strong>Coordinates:</strong> {selectedThreat.lat.toFixed(4)}, {selectedThreat.lon.toFixed(4)}</div>
               
               <div className="threat-box">
                 <h4>Attack Vector</h4>
-                <p><strong>Method:</strong> SSH Brute Force (Port 22)</p>
-                <p><strong>Username Tried:</strong> {selectedThreat.username}</p>
-                <p><strong>Password Tried:</strong> {selectedThreat.passwordTried}</p>
-                <div className="risk-score">
-                   Risk Score: <span className="critical">CRITICAL (98/100)</span>
-                </div>
+                <p><strong>Method:</strong> SSH Brute Force</p>
+                <p><strong>Username:</strong> {selectedThreat.username}</p>
+                <p><strong>Password:</strong> {selectedThreat.passwordTried}</p>
               </div>
-              <p className="timestamp-footer">Intercepted at {new Date(selectedThreat.timestamp).toLocaleString()}</p>
+              
+              {!blacklistedIPs.includes(selectedThreat.ip) && (
+                <button className="block-ip-btn" onClick={() => blockIP(selectedThreat.ip)}>
+                  <Ban size={16} /> ADD FIREWALL RULE (BLOCK IP)
+                </button>
+              )}
             </div>
           </div>
         </div>
       )}
     </div>
   );
+}
+
+// Router Component
+function App() {
+  // Simple router based on window.location
+  if (window.location.pathname === '/attack') {
+    return <AttackerPortal />;
+  }
+  return <Dashboard />;
 }
 
 export default App;
