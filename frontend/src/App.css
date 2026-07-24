@@ -23,8 +23,7 @@ body {
 .dashboard-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
   padding: 1rem 2rem;
   box-sizing: border-box;
   transition: background-image 1s ease;
@@ -220,24 +219,29 @@ body {
 /* Main Content (Map + Feed) */
 .main-content {
   display: flex;
+  flex-wrap: wrap;
   flex: 1;
   gap: 1.5rem;
-  min-height: 0;
+  min-height: 500px;
 }
 
 .map-container {
   flex: 2;
+  min-width: 500px;
   position: relative;
   overflow: hidden;
-  min-height: 0;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
 }
 
 .feed-panel {
   flex: 1;
+  min-width: 350px;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  min-height: 0;
+  min-height: 500px;
 }
 
 .feed-container {
