@@ -377,7 +377,7 @@ function Dashboard() {
         </div>
         
         
-        <div className="stats-card glass-panel" style={{display: 'flex', flexDirection: 'row', gap: '30px', justifyContent: 'space-around'}}>
+        <div className="stats-card glass-panel">
            <div className="stat-box">
              <h4>CPU Load</h4>
              <span className="stat-value" style={{color: cpuUsage > 80 ? 'red' : cpuUsage > 50 ? 'orange' : '#00C851'}}>{Math.round(cpuUsage)}%</span>
@@ -414,17 +414,15 @@ function Dashboard() {
                 ))
               }
             </Geographies>
-            {attacks.map((attack, index) => {
+            {attacks.slice(0, 20).map((attack, index) => {
               const isBlocked = blacklistedIPs.includes(attack.ip);
               
-              // Hash the timestamp and IP to create a deterministic but globally scattered random coordinate for visual impact
-              const hash = Math.abs((attack.timestamp + attack.ip).split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a }, 0));
-              const city = MAJOR_CITIES[hash % MAJOR_CITIES.length];
-              const scatterLon = city[0] + (hash % 20 - 10) * 0.2;
-              const scatterLat = city[1] + ((hash >> 4) % 20 - 10) * 0.2;
+              // Use real coordinates but apply deterministic jitter so repeated attacks from the same IP form a visible cluster
+              const jitterX = (index % 5) * 1.5 - 3.0;
+              const jitterY = ((index * 3) % 5) * 1.5 - 3.0;
               
               return (
-                <Marker key={index} coordinates={[scatterLon, scatterLat]}>
+                <Marker key={index} coordinates={[attack.lon + jitterX, attack.lat + jitterY]}>
                   {/* Grey dot if blocked, Red dot if active */}
                   <circle r={5} fill={isBlocked ? "#666666" : "#FF4444"} className={isBlocked ? "" : "blink-marker"} />
                 </Marker>
