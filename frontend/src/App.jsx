@@ -9,29 +9,31 @@ import "./App.css";
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://127.0.0.1:5000";
 
-// Colors for Pie Chart
-const COLORS = ['#FF4444', '#FF8800', '#FFCC00', '#00C851', '#33B5E5'];
+// Vibrant 'Toy-like' Primary Colors for the Pie Chart
+const COLORS = ['#FF1493', '#00E5FF', '#FFEB3B', '#39FF14', '#FF5722'];
 
 // --- ATTACKER PORTAL COMPONENT ---
-// This is what the audience sees on their phone when they scan the QR code!
 function AttackerPortal() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState("ready");
+  const [realIp, setRealIp] = useState("8.8.8.8");
+
+  useEffect(() => {
+    // Fetch the real IP of the mobile device
+    fetch("https://api.ipify.org?format=json")
+      .then(res => res.json())
+      .then(data => setRealIp(data.ip))
+      .catch(err => console.error("Could not fetch IP"));
+  }, []);
 
   const launchAttack = async (e) => {
     e.preventDefault();
     if (!username || !password) return;
     setStatus("attacking");
-
-    // We pick a random global IP for the audience member so they appear on the world map!
-    const global_ips = [
-      "46.17.40.1", "176.12.34.12", "114.114.114.114", "177.20.10.1", 
-      "192.200.1.1", "144.76.10.1", "212.58.244.20", "133.1.2.3"
-    ];
     
     const payload = {
-      ip: global_ips[Math.floor(Math.random() * global_ips.length)],
+      ip: realIp,
       username: username,
       passwordTried: password
     };
@@ -256,9 +258,9 @@ function Dashboard() {
           <div className="chart-wrapper">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={topCountries} cx="50%" cy="50%" innerRadius={45} outerRadius={75} cornerRadius={8} paddingAngle={4} dataKey="value" stroke="none">
+                <Pie data={topCountries} cx="50%" cy="50%" innerRadius={40} outerRadius={75} cornerRadius={12} paddingAngle={6} dataKey="value" stroke="rgba(255,255,255,0.1)" strokeWidth={2}>
                   {topCountries.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} style={{ filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.4))' }} />
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} style={{ filter: 'drop-shadow(0px 4px 6px rgba(0,0,0,0.6))' }} />
                   ))}
                 </Pie>
                 <RechartsTooltip contentStyle={{backgroundColor: '#1a1a24', border: '1px solid #333', borderRadius: '8px', color: '#fff'}} itemStyle={{color: '#fff'}} />
