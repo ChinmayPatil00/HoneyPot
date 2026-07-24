@@ -121,11 +121,16 @@ body {
 /* Analytics Row */
 .analytics-row {
   display: grid;
-  grid-template-columns: 240px 1fr 1fr 200px;
+  grid-template-columns: 200px 1fr 1fr 180px;
   gap: 1.5rem;
   margin-bottom: 1.5rem;
-  height: 180px;
-  min-height: 180px;
+  flex: 0 0 200px; /* Strict height to prevent overflow */
+}
+
+.chart-card, .qr-card, .stats-card {
+  height: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 /* QR Code Panel */
@@ -152,10 +157,13 @@ body {
   flex: 1;
 }
 .qr-wrapper {
-  background: white;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
   padding: 8px;
   border-radius: 8px;
   margin-bottom: 8px;
+  display: flex;
+  justify-content: center;
 }
 .qr-text {
   text-align: center;
