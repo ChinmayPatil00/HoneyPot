@@ -203,6 +203,8 @@ function Dashboard() {
       // Add raw log to the terminal
       const rawLog = `[${new Date().toLocaleTimeString()}] INBOUND TCP 22 SYN_RCVD src=${data.ip} user=${data.username} pass=${data.passwordTried} | REJECTED`;
       setLogs(prev => [...prev, rawLog].slice(-20));
+      playAudio('beep');
+      setCpuUsage(prev => Math.min(prev + (Math.random() * 15 + 5), 100));
     });
 
     fetch(`${BACKEND_URL}/api/attacks`)
@@ -321,19 +323,18 @@ function Dashboard() {
       {/* Analytics Row */}
       <div className="analytics-row">
         {/* Audience QR Code Panel */}
-        <div className="qr-card glass-panel">
+        <div className="qr-card glass-panel" style={{ justifyContent: 'center' }}>
           <div className="qr-header">
-            <Smartphone size={18} color="#00C851"/>
-            <h3>Audience Attack Portal</h3>
+            <ShieldCheck size={18} color="#00C851"/>
+            <h3>System Overview</h3>
           </div>
-          <div className="qr-body">
-            <div className="qr-wrapper">
-              <QRCode value={audienceLink} size={100} bgColor="transparent" fgColor="#fff" />
-            </div>
-            <div className="qr-text">
-              <p>Scan to attack the server!</p>
-              <a href="/attack" target="_blank" rel="noreferrer">Open Portal</a>
-            </div>
+          <div className="qr-body" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '10px', padding: '0 5px' }}>
+            <p style={{ fontSize: '0.85rem', color: '#aaa', lineHeight: '1.5', textAlign: 'left' }}>
+              This node operates as a high-interaction honeypot, engineered to intercept, log, and analyze unauthorized network intrusions in real-time. 
+            </p>
+            <p style={{ fontSize: '0.85rem', color: '#aaa', lineHeight: '1.5', textAlign: 'left' }}>
+              All incoming payloads are securely isolated and profiled by the AI engine to classify global threat actors instantly.
+            </p>
           </div>
         </div>
 
@@ -407,8 +408,10 @@ function Dashboard() {
             </Geographies>
             {attacks.map((attack, index) => {
               const isBlocked = blacklistedIPs.includes(attack.ip);
+              const jitterX = (index % 5) * 1.5 - 3.0;
+              const jitterY = ((index * 3) % 5) * 1.5 - 3.0;
               return (
-                <Marker key={index} coordinates={[attack.lon, attack.lat]}>
+                <Marker key={index} coordinates={[attack.lon + jitterX, attack.lat + jitterY]}>
                   {/* Grey dot if blocked, Red dot if active */}
                   <circle r={5} fill={isBlocked ? "#666666" : "#FF4444"} className={isBlocked ? "" : "blink-marker"} />
                 </Marker>
