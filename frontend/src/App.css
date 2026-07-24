@@ -412,6 +412,44 @@ body {
   border-color: white;
 }
 
+.see-more-btn {
+  background: rgba(255,255,255,0.05);
+  border: 1px dashed rgba(255,255,255,0.2);
+  color: var(--text-muted);
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  margin-top: 5px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+}
+.see-more-btn:hover {
+  background: rgba(255,255,255,0.1);
+  color: white;
+  border-style: solid;
+}
+
+.all-attacks-modal {
+  width: 600px;
+  max-width: 90vw;
+  height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.all-attacks-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-right: 10px;
+}
+.all-attacks-list::-webkit-scrollbar { width: 6px; }
+.all-attacks-list::-webkit-scrollbar-thumb { background-color: #333; border-radius: 4px; }
+
 /* Attacker Portal */
 .attacker-portal {
   height: 100vh;

@@ -95,6 +95,7 @@ function Dashboard() {
   
   // New State for Blocked IPs
   const [blacklistedIPs, setBlacklistedIPs] = useState([]);
+  const [isAllAttacksModalOpen, setIsAllAttacksModalOpen] = useState(false);
   
   // Terminal logs state
   const [logs, setLogs] = useState([]);
@@ -318,21 +319,28 @@ function Dashboard() {
               {attacks.length === 0 ? (
                 <p className="waiting-msg">System Active. Waiting for attacks...</p>
               ) : (
-                attacks.map((attack, i) => {
-                  const isBlocked = blacklistedIPs.includes(attack.ip);
-                  return (
-                    <div key={i} className={`attack-card ${isBlocked ? 'blocked-card' : ''}`} onClick={() => setSelectedThreat(attack)}>
-                      <div className="attack-header">
-                        <span className="ip">{attack.ip} {isBlocked && <span className="blocked-tag">[BLOCKED]</span>}</span>
-                        <span className="time">{new Date(attack.timestamp).toLocaleTimeString()}</span>
+                <>
+                  {attacks.slice(0, 5).map((attack, i) => {
+                    const isBlocked = blacklistedIPs.includes(attack.ip);
+                    return (
+                      <div key={i} className={`attack-card ${isBlocked ? 'blocked-card' : ''}`} onClick={() => setSelectedThreat(attack)}>
+                        <div className="attack-header">
+                          <span className="ip">{attack.ip} {isBlocked && <span className="blocked-tag">[BLOCKED]</span>}</span>
+                          <span className="time">{new Date(attack.timestamp).toLocaleTimeString()}</span>
+                        </div>
+                        <div className="attack-details">
+                          <p><span>User:</span> {attack.username}</p>
+                          <p><span>Pass:</span> <span className="password">{attack.passwordTried}</span></p>
+                        </div>
                       </div>
-                      <div className="attack-details">
-                        <p><span>User:</span> {attack.username}</p>
-                        <p><span>Pass:</span> <span className="password">{attack.passwordTried}</span></p>
-                      </div>
-                    </div>
-                  );
-                })
+                    );
+                  })}
+                  {attacks.length > 5 && (
+                    <button className="see-more-btn" onClick={() => setIsAllAttacksModalOpen(true)}>
+                      See All Attacks ({attacks.length})
+                    </button>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -378,6 +386,36 @@ function Dashboard() {
                   <Ban size={16} /> ADD FIREWALL RULE (BLOCK IP)
                 </button>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* All Attacks Modal */}
+      {isAllAttacksModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsAllAttacksModalOpen(false)}>
+          <div className="modal-content glass-panel all-attacks-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="close-btn" onClick={() => setIsAllAttacksModalOpen(false)}><X size={20} /></button>
+            <div className="modal-header">
+              <Activity size={32} color="#33B5E5" />
+              <h2>All Intercepted Attacks</h2>
+            </div>
+            <div className="all-attacks-list">
+              {attacks.map((attack, i) => {
+                const isBlocked = blacklistedIPs.includes(attack.ip);
+                return (
+                  <div key={i} className={`attack-card ${isBlocked ? 'blocked-card' : ''}`}>
+                    <div className="attack-header">
+                      <span className="ip">{attack.ip} {isBlocked && <span className="blocked-tag">[BLOCKED]</span>}</span>
+                      <span className="time">{new Date(attack.timestamp).toLocaleString()}</span>
+                    </div>
+                    <div className="attack-details">
+                      <p><span>Origin:</span> {attack.city}, {attack.country}</p>
+                      <p><span>User:</span> {attack.username} | <span>Pass:</span> <span className="password">{attack.passwordTried}</span></p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
