@@ -547,22 +547,6 @@ body {
 }
 
 /* --- RESPONSIVE MOBILE LAYOUT --- */
-@media (max-width: 1024px) {
-  .analytics-row {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .main-content {
-    flex-direction: column;
-  }
-  .map-container {
-    min-width: 100%;
-    min-height: 400px;
-  }
-  .feed-panel {
-    min-width: 100%;
-  }
-}
-
 @media (max-width: 768px) {
   .dashboard-container {
     padding: 1rem;
