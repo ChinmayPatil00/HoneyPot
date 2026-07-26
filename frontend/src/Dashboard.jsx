@@ -46,7 +46,7 @@ const getAIProfile = (pass) => {
 };
 
 // --- ATTACKER PORTAL COMPONENT ---
-function AttackerPortal() {
+export function AttackerPortal() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState("ready");
@@ -122,7 +122,7 @@ function AttackerPortal() {
 
 
 // --- MAIN DASHBOARD COMPONENT ---
-function Dashboard() {
+export default function Dashboard() {
   const [attacks, setAttacks] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
   const [selectedThreat, setSelectedThreat] = useState(null);
@@ -497,13 +497,3 @@ function Dashboard() {
   );
 }
 
-// Router Component
-function App() {
-  // Simple router based on window.location
-  if (window.location.pathname === '/attack') {
-    return <AttackerPortal />;
-  }
-  return <Dashboard />;
-}
-
-export default App;
