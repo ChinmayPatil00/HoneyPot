@@ -419,7 +419,6 @@ function Dashboard() {
             </div>
           </div>
         </div>
-      </div>
 
       {/* Interactive Threat Modal */}
       {selectedThreat && (
