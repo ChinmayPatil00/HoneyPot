@@ -110,3 +110,43 @@
     width: 100%;
   }
 }
+
+/* Geographic Targets Cards */
+.geo-item {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 12px;
+  transition: all 0.2s ease;
+  border-left: 3px solid var(--accent-green);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.geo-item:hover {
+  background: rgba(0, 200, 81, 0.05);
+}
+.geo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.geo-country {
+  color: var(--accent-green);
+  font-weight: bold;
+}
+.geo-time {
+  font-size: 0.8rem;
+  color: #888;
+}
+.geo-details {
+  display: flex;
+  justify-content: space-between;
+  color: #ccc;
+  font-size: 0.9rem;
+}
+.geo-coords {
+  font-family: monospace;
+  color: #666;
+}

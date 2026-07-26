@@ -63,6 +63,7 @@ export function AttackerPortal() {
   const launchAttack = async (e) => {
     e.preventDefault();
     if (!username || !password) return;
+    playAudio('beep');
     setStatus("attacking");
     
     const payload = {
@@ -77,6 +78,7 @@ export function AttackerPortal() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
+      playAudio('alarm');
       setStatus("success");
       setTimeout(() => setStatus("ready"), 3000);
     } catch (err) {
