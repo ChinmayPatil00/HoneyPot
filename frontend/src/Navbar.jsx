@@ -19,7 +19,7 @@ const Navbar = () => {
         </NavLink>
         <NavLink 
           to="/map" 
-          className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
+          className={({ isActive }) => isActive ? "nav-item active map-btn" : "nav-item map-btn"}
         >
           <MapIcon size={18} /> Global Threat Map
         </NavLink>

@@ -67,3 +67,23 @@
     padding: 8px;
   }
 }
+
+/* Highlighted Map Button */
+.nav-item.map-btn {
+  background: linear-gradient(135deg, rgba(0, 200, 81, 0.2), rgba(0, 210, 255, 0.2));
+  border: 1px solid rgba(0, 200, 81, 0.4);
+  color: #fff;
+  box-shadow: 0 0 10px rgba(0, 200, 81, 0.15);
+}
+
+.nav-item.map-btn:hover {
+  background: linear-gradient(135deg, rgba(0, 200, 81, 0.3), rgba(0, 210, 255, 0.3));
+  box-shadow: 0 0 15px rgba(0, 200, 81, 0.3);
+  transform: translateY(-1px);
+}
+
+.nav-item.map-btn.active {
+  background: linear-gradient(135deg, rgba(0, 200, 81, 0.4), rgba(0, 210, 255, 0.4));
+  border: 1px solid rgba(0, 200, 81, 0.8);
+  box-shadow: 0 0 20px rgba(0, 200, 81, 0.4);
+}
