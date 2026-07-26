@@ -1,24 +1,15 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 import { io } from "socket.io-client";
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { ShieldAlert, Activity, Globe, MapPin, X, ShieldCheck, Terminal, Ban, Smartphone, Download, Cpu, Skull } from "lucide-react";
 import QRCode from "react-qr-code";
+import Navbar from "./Navbar";
 import "./Dashboard.css";
 
-const geoUrl = "/countries-110m.json";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://127.0.0.1:5000";
 
 // Professional Cybersecurity Color Palette for Pie Chart
 const COLORS = ['#00d2ff', '#3a7bd5', '#8e44ad', '#e74c3c', '#f39c12'];
-
-const MAJOR_CITIES = [
-  [-74.006, 40.7128], [-0.1276, 51.5074], [139.6917, 35.6895], 
-  [37.6173, 55.7558], [116.4074, 39.9042], [151.2093, -33.8688], 
-  [2.3522, 48.8566], [-118.2437, 34.0522], [13.405, 52.52], 
-  [-43.1729, -22.9068], [103.8198, 1.3521], [28.0473, -26.2041], 
-  [-99.1332, 19.4326], [72.8777, 19.076], [55.2708, 25.2048]
-];
 
 
 const playAudio = (type) => {
@@ -135,7 +126,6 @@ function Dashboard() {
   const [attacks, setAttacks] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
   const [selectedThreat, setSelectedThreat] = useState(null);
-  const [isSimulating, setIsSimulating] = useState(false);
   
   // New State for Blocked IPs
 
@@ -263,24 +253,6 @@ function Dashboard() {
       .slice(0, 5);
   }, [attacks]);
 
-  const handleSimulateAttack = async () => {
-    setIsSimulating(true);
-    const global_ips = ["46.17.40.1", "114.114.114.114", "177.20.10.1", "192.200.1.1", "144.76.10.1"];
-    const payload = {
-      ip: global_ips[Math.floor(Math.random() * global_ips.length)],
-      username: "admin",
-      passwordTried: "123456"
-    };
-    try {
-      await fetch(`${BACKEND_URL}/api/attack`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-    } catch (e) { }
-    setTimeout(() => setIsSimulating(false), 800);
-  };
-
   const blockIP = (ip) => {
     if (!blacklistedIPs.includes(ip)) {
       setBlacklistedIPs([...blacklistedIPs, ip]);
@@ -293,6 +265,7 @@ function Dashboard() {
 
   return (
     <div className={`dashboard-container defcon-${defconLevel}`}>
+      <Navbar />
       <header className="header glass-panel">
         <div className="header-title">
           <ShieldCheck size={32} color="#00C851" />
@@ -394,47 +367,9 @@ function Dashboard() {
       </div>
 
       <div className="main-content">
-        <div className="map-container glass-panel">
-          <ComposableMap projection="geoMercator" projectionConfig={{ scale: 130 }}>
-            <Geographies geography={geoUrl}>
-              {({ geographies }) =>
-                geographies.map((geo) => (
-                  <Geography
-                    key={geo.rsmKey}
-                    geography={geo}
-                    fill="#1e1e28"
-                    stroke="#2a2a35"
-                    strokeWidth={0.5}
-                    style={{
-                      default: { outline: "none" },
-                      hover: { fill: "#3a3a45", outline: "none" },
-                      pressed: { outline: "none" },
-                    }}
-                  />
-                ))
-              }
-            </Geographies>
-            {attacks.slice(0, 20).map((attack, index) => {
-              const isBlocked = blacklistedIPs.includes(attack.ip);
-              
-              // Use real coordinates but apply deterministic jitter so repeated attacks from the same IP form a visible cluster
-              const jitterX = (index % 5) * 1.5 - 3.0;
-              const jitterY = ((index * 3) % 5) * 1.5 - 3.0;
-              
-              return (
-                <Marker key={index} coordinates={[attack.lon + jitterX, attack.lat + jitterY]}>
-                  {/* Grey dot if blocked, Red dot if active */}
-                  <circle r={5} fill={isBlocked ? "#666666" : "#FF4444"} className={isBlocked ? "" : "blink-marker"} />
-                </Marker>
-              );
-            })}
-          </ComposableMap>
-        </div>
-
-        <div className="feed-panel">
-          <div className="feed-container glass-panel">
-            <h2><Activity size={18} /> Live Attack Feed</h2>
-            <div className="attack-list" style={{ overflow: 'hidden' }}>
+        <div className="feed-panel glass-panel" style={{ flex: 1, minHeight: '500px' }}>
+          <h2><Terminal size={18} /> Live Attack Feed</h2>
+          <div className="attack-list" style={{ overflow: 'hidden' }}>
               {attacks.length === 0 ? (
                 <p className="waiting-msg">System Active. Waiting for attacks...</p>
               ) : (

@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LandingPage from './LandingPage';
 import Dashboard from './Dashboard';
+import MapFeature from './MapFeature';
 import './App.css'; // Just keeping global resets
 
 const App = () => {
@@ -10,6 +11,7 @@ const App = () => {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/map" element={<MapFeature />} />
       </Routes>
     </Router>
   );
