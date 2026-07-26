@@ -90,3 +90,23 @@
     min-height: 400px;
   }
 }
+
+/* --- RESPONSIVE MOBILE LAYOUT --- */
+@media (max-width: 768px) {
+  .map-page-container {
+    padding-top: 100px; /* Space for stacked mobile navbar */
+  }
+
+  .map-content {
+    flex-direction: column;
+  }
+  
+  .map-view-container {
+    min-height: 400px;
+  }
+  
+  .map-side-panel {
+    min-width: 100%;
+    width: 100%;
+  }
+}

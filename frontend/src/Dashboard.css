@@ -578,3 +578,41 @@ body {
     font-size: 1rem;
   }
 }
+
+/* --- RESPONSIVE MOBILE LAYOUT --- */
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding-top: 100px; /* Space for stacked mobile navbar */
+  }
+
+  .analytics-row {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .main-content {
+    flex-direction: column;
+  }
+  
+  .feed-panel {
+    min-width: 100%;
+  }
+
+  .terminal-container {
+    min-width: 100%;
+  }
+
+  .header-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-title h1 {
+    font-size: 1.2rem;
+  }
+  
+  .modal-content {
+    width: 95%;
+    max-width: 400px;
+  }
+}

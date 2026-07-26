@@ -167,3 +167,29 @@
 @keyframes blink {
   50% { opacity: 0; }
 }
+
+/* --- RESPONSIVE MOBILE LAYOUT --- */
+@media (max-width: 768px) {
+  .landing-container {
+    padding: 1rem;
+    padding-top: 80px; /* Space for mobile navbar */
+  }
+  
+  .hero-section h1 {
+    font-size: 2rem;
+  }
+  
+  .hero-section p {
+    font-size: 1rem;
+    padding: 0 10px;
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .feature-card {
+    padding: 1.5rem;
+  }
+}
