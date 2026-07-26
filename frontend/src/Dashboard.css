@@ -567,6 +567,7 @@ body {
   }
   .map-container {
     min-height: 300px;
+    min-width: 100%;
   }
   .terminal-container {
     font-size: 0.75rem;

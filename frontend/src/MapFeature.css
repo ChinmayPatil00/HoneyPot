@@ -93,20 +93,17 @@
 
 /* --- RESPONSIVE MOBILE LAYOUT --- */
 @media (max-width: 768px) {
-  .map-page-container {
-    padding-top: 100px; /* Space for stacked mobile navbar */
-  }
-
-  .map-content {
+  .map-page-layout {
     flex-direction: column;
+    height: auto;
+    gap: 1rem;
   }
-  
-  .map-view-container {
-    min-height: 400px;
-  }
-  
-  .map-side-panel {
+  .full-map {
+    min-height: 300px;
     min-width: 100%;
+  }
+  .geo-feed {
+    min-height: 300px;
     width: 100%;
   }
 }

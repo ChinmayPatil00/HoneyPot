@@ -21,6 +21,7 @@ const MapFeature = () => {
   const [attacks, setAttacks] = useState([]);
   const [blacklistedIPs, setBlacklistedIPs] = useState([]);
   const [isAutoSimulating, setIsAutoSimulating] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(10);
 
   useEffect(() => {
     let interval;
@@ -129,21 +130,32 @@ const MapFeature = () => {
             {attacks.length === 0 ? (
               <p className="waiting-msg" style={{padding: '20px', textAlign: 'center', color: '#888'}}>System Active. Waiting for attacks...</p>
             ) : (
-              attacks.map((attack, index) => {
-                const isBlocked = blacklistedIPs.includes(attack.ip);
-                return (
-                  <div key={index} className={`attack-card ${isBlocked ? 'blocked-card' : ''}`}>
-                    <div className="attack-header">
-                      <span className="ip">{attack.country || "Unknown Region"}</span>
-                      <span className="time">{new Date(attack.timestamp).toLocaleTimeString()}</span>
+              <>
+                {attacks.slice(0, visibleCount).map((attack, index) => {
+                  const isBlocked = blacklistedIPs.includes(attack.ip);
+                  return (
+                    <div key={index} className={`attack-card ${isBlocked ? 'blocked-card' : ''}`}>
+                      <div className="attack-header">
+                        <span className="ip">{attack.country || "Unknown Region"}</span>
+                        <span className="time">{new Date(attack.timestamp).toLocaleTimeString()}</span>
+                      </div>
+                      <div className="attack-details">
+                        <p><span>City:</span> {attack.city || "Unknown City"}</p>
+                        <p><span>Coords:</span> <span className="password">[{attack.lat?.toFixed(2)}, {attack.lon?.toFixed(2)}]</span></p>
+                      </div>
                     </div>
-                    <div className="attack-details">
-                      <p><span>City:</span> {attack.city || "Unknown City"}</p>
-                      <p><span>Coords:</span> <span className="password">[{attack.lat?.toFixed(2)}, {attack.lon?.toFixed(2)}]</span></p>
-                    </div>
-                  </div>
-                );
-              })
+                  );
+                })}
+                {attacks.length > visibleCount && (
+                  <button 
+                    className="simulate-btn" 
+                    onClick={() => setVisibleCount(prev => prev + 10)}
+                    style={{width: '100%', marginTop: '10px', textAlign: 'center', justifyContent: 'center'}}
+                  >
+                    Load More Targets ({attacks.length - visibleCount} remaining)
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>
