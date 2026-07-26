@@ -45,21 +45,23 @@
 }
 
 .hero-title {
-  font-size: 4rem;
-  font-weight: 700;
-  margin: 0;
-  background: linear-gradient(to right, #fff, #a0aabf);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  letter-spacing: -1px;
+  font-size: 4.5rem;
+  font-weight: 800;
+  margin: 0 0 10px 0;
+  color: #ffffff;
+  text-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+  letter-spacing: -1.5px;
+  line-height: 1.2;
+  text-align: center;
 }
 
 .hero-subtitle {
-  font-size: 1.25rem;
-  color: var(--text-muted);
-  max-width: 700px;
+  font-size: 1.3rem;
+  color: #a0aabf;
+  max-width: 750px;
   line-height: 1.6;
   margin: 0;
+  font-weight: 400;
 }
 
 .enter-btn {
@@ -68,23 +70,24 @@
   align-items: center;
   gap: 12px;
   background: rgba(0, 200, 81, 0.15);
-  border: 1px solid rgba(0, 200, 81, 0.4);
+  border: 1px solid rgba(0, 200, 81, 0.6);
   color: var(--accent-green);
-  padding: 16px 32px;
-  font-size: 1.2rem;
-  font-weight: 600;
+  padding: 16px 36px;
+  font-size: 1.3rem;
+  font-weight: 700;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
   font-family: 'JetBrains Mono', monospace;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
+  box-shadow: 0 0 20px rgba(0, 200, 81, 0.2);
 }
 
 .enter-btn:hover {
   background: rgba(0, 200, 81, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(0, 200, 81, 0.2);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 15px 30px rgba(0, 200, 81, 0.4);
 }
 
 .features-grid {
