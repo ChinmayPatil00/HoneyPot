@@ -20,6 +20,43 @@ const MAJOR_CITIES = [
 const MapFeature = () => {
   const [attacks, setAttacks] = useState([]);
   const [blacklistedIPs, setBlacklistedIPs] = useState([]);
+  const [isAutoSimulating, setIsAutoSimulating] = useState(false);
+
+  useEffect(() => {
+    let interval;
+    if (isAutoSimulating) {
+      interval = setInterval(() => {
+        const randomIP = `${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`;
+        const randomCities = [
+          {c:"Moscow", co:"Russia", lat: 55.75, lon: 37.61}, 
+          {c:"Beijing", co:"China", lat: 39.9, lon: 116.4},
+          {c:"Pyongyang", co:"North Korea", lat: 39.02, lon: 125.75},
+          {c:"Tehran", co:"Iran", lat: 35.68, lon: 51.38},
+          {c:"New York", co:"USA", lat: 40.71, lon: -74.00},
+          {c:"London", co:"UK", lat: 51.50, lon: -0.12},
+          {c:"Mumbai", co:"India", lat: 19.07, lon: 72.87},
+          {c:"Tokyo", co:"Japan", lat: 35.67, lon: 139.65},
+          {c:"Sydney", co:"Australia", lat: -33.86, lon: 151.20},
+          {c:"Sao Paulo", co:"Brazil", lat: -23.55, lon: -46.63}
+        ];
+        const rc = randomCities[Math.floor(Math.random()*randomCities.length)];
+        
+        const newAttack = {
+          ip: randomIP,
+          username: "admin",
+          passwordTried: "123456",
+          city: rc.c,
+          country: rc.co,
+          lat: rc.lat,
+          lon: rc.lon,
+          timestamp: new Date().toISOString()
+        };
+        
+        setAttacks(prev => [newAttack, ...prev].slice(0, 100));
+      }, 1500); 
+    }
+    return () => clearInterval(interval);
+  }, [isAutoSimulating]);
 
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/attacks`)
@@ -76,7 +113,18 @@ const MapFeature = () => {
 
         {/* Dedicated Geolocation Feed */}
         <div className="geo-feed glass-panel">
-          <h2><MapPin size={18} /> Live Geographic Targets</h2>
+          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '10px'}}>
+            <h2 style={{margin: 0, display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '1.1rem'}}>
+              <MapPin size={18} /> Live Geographic Targets
+            </h2>
+            <button 
+              className={`simulate-btn ${isAutoSimulating ? 'active' : ''}`}
+              onClick={() => setIsAutoSimulating(!isAutoSimulating)}
+              style={{padding: '4px 10px', fontSize: '0.8rem'}}
+            >
+              {isAutoSimulating ? "Stop Simulation" : "Auto-Simulate Traffic"}
+            </button>
+          </div>
           <div className="geo-list">
             {attacks.length === 0 ? (
               <p className="waiting-msg" style={{padding: '20px', textAlign: 'center', color: '#888'}}>System Active. Waiting for attacks...</p>
