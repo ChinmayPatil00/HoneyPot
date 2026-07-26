@@ -4,6 +4,7 @@ import { ShieldCheck, MapPin } from "lucide-react";
 import { io } from "socket.io-client";
 import Navbar from "./Navbar";
 import "./MapFeature.css";
+import "./Dashboard.css";
 
 const geoUrl = "/countries-110m.json";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://127.0.0.1:5000";
@@ -77,18 +78,25 @@ const MapFeature = () => {
         <div className="geo-feed glass-panel">
           <h2><MapPin size={18} /> Live Geographic Targets</h2>
           <div className="geo-list">
-            {attacks.map((attack, index) => (
-              <div key={index} className="geo-item">
-                <div className="geo-header">
-                  <span className="geo-country">{attack.country || "Unknown Region"}</span>
-                  <span className="geo-time">{new Date(attack.timestamp).toLocaleTimeString()}</span>
-                </div>
-                <div className="geo-details">
-                  <span className="geo-city">{attack.city || "Unknown City"}</span>
-                  <span className="geo-coords">[{attack.lat?.toFixed(2)}, {attack.lon?.toFixed(2)}]</span>
-                </div>
-              </div>
-            ))}
+            {attacks.length === 0 ? (
+              <p className="waiting-msg" style={{padding: '20px', textAlign: 'center', color: '#888'}}>System Active. Waiting for attacks...</p>
+            ) : (
+              attacks.map((attack, index) => {
+                const isBlocked = blacklistedIPs.includes(attack.ip);
+                return (
+                  <div key={index} className={`attack-card ${isBlocked ? 'blocked-card' : ''}`}>
+                    <div className="attack-header">
+                      <span className="ip">{attack.country || "Unknown Region"}</span>
+                      <span className="time">{new Date(attack.timestamp).toLocaleTimeString()}</span>
+                    </div>
+                    <div className="attack-details">
+                      <p><span>City:</span> {attack.city || "Unknown City"}</p>
+                      <p><span>Coords:</span> <span className="password">[{attack.lat?.toFixed(2)}, {attack.lon?.toFixed(2)}]</span></p>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
       </div>
