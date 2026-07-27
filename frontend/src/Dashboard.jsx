@@ -370,7 +370,7 @@ export default function Dashboard() {
 
       <div className="main-content">
         <div className="feed-panel glass-panel" style={{ flex: 1, minHeight: '500px' }}>
-          <h2><Terminal size={18} /> Live Attack Feed</h2>
+          <h2>Live Attack Feed</h2>
           <div className="attack-list" style={{ overflow: 'hidden' }}>
               {attacks.length === 0 ? (
                 <p className="waiting-msg">System Active. Waiting for attacks...</p>
