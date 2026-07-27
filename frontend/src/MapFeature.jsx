@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 import { ShieldCheck, MapPin } from "lucide-react";
 import { io } from "socket.io-client";
@@ -9,13 +9,26 @@ import "./Dashboard.css";
 const geoUrl = "/countries-110m.json";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://127.0.0.1:5000";
 
-const MAJOR_CITIES = [
-  [-74.006, 40.7128], [-0.1276, 51.5074], [139.6917, 35.6895], 
-  [37.6173, 55.7558], [116.4074, 39.9042], [151.2093, -33.8688], 
-  [2.3522, 48.8566], [-118.2437, 34.0522], [13.405, 52.52], 
-  [-43.1729, -22.9068], [103.8198, 1.3521], [28.0473, -26.2041], 
-  [-99.1332, 19.4326], [72.8777, 19.076], [55.2708, 25.2048]
-];
+const MapBaseLayer = React.memo(() => (
+  <Geographies geography={geoUrl}>
+    {({ geographies }) =>
+      geographies.map((geo) => (
+        <Geography
+          key={geo.rsmKey}
+          geography={geo}
+          fill="#1a1a24"
+          stroke="rgba(255,255,255,0.05)"
+          strokeWidth={0.5}
+          style={{
+            default: { outline: "none" },
+            hover: { fill: "#2a2a35", outline: "none" },
+            pressed: { outline: "none" },
+          }}
+        />
+      ))
+    }
+  </Geographies>
+));
 
 const MapFeature = () => {
   const [attacks, setAttacks] = useState([]);
@@ -80,31 +93,21 @@ const MapFeature = () => {
       <div className="map-page-layout">
         {/* Huge Full-Screen Map Container */}
         <div className="map-container glass-panel full-map">
-          <ComposableMap projection="geoMercator" projectionConfig={{ scale: 130 }}>
-            <Geographies geography={geoUrl}>
-              {({ geographies }) =>
-                geographies.map((geo) => (
-                  <Geography
-                    key={geo.rsmKey}
-                    geography={geo}
-                    fill="#1a1a24"
-                    stroke="rgba(255,255,255,0.05)"
-                    strokeWidth={0.5}
-                    style={{
-                      default: { outline: "none" },
-                      hover: { fill: "#2a2a35", outline: "none" },
-                      pressed: { outline: "none" },
-                    }}
-                  />
-                ))
-              }
-            </Geographies>
+          <ComposableMap
+            projection="geoMercator"
+            projectionConfig={{
+              scale: 120,
+              center: [0, 20]
+            }}
+            style={{ width: "100%", height: "100%" }}
+          >
+            <MapBaseLayer />
             {attacks.slice(0, 50).map((attack, index) => {
               const isBlocked = blacklistedIPs.includes(attack.ip);
               const jitterX = (index % 5) * 1.5 - 3.0;
               const jitterY = ((index * 3) % 5) * 1.5 - 3.0;
               return (
-                <Marker key={index} coordinates={[attack.lon + jitterX, attack.lat + jitterY]}>
+                <Marker key={attack._id || `${attack.timestamp}-${attack.ip}-${index}`} coordinates={[attack.lon + jitterX, attack.lat + jitterY]}>
                   <circle r={6} fill={isBlocked ? "#666666" : "#FF4444"} className={isBlocked ? "" : "blink-marker"} />
                 </Marker>
               );
@@ -134,7 +137,7 @@ const MapFeature = () => {
                 {attacks.slice(0, visibleCount).map((attack, index) => {
                   const isBlocked = blacklistedIPs.includes(attack.ip);
                   return (
-                    <div key={index} className={`attack-card ${isBlocked ? 'blocked-card' : ''}`}>
+                    <div key={attack._id || `${attack.timestamp}-${attack.ip}-${index}`} className={`attack-card ${isBlocked ? 'blocked-card' : ''}`}>
                       <div className="attack-header">
                         <span className="ip">{attack.country || "Unknown Region"}</span>
                         <span className="time">{new Date(attack.timestamp).toLocaleTimeString()}</span>

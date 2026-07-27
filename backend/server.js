@@ -57,16 +57,29 @@ app.get('/api/attacks', async (req, res) => {
 // 2. The Python Honeypot will send a POST request here when it catches a hacker
 app.post('/api/attack', async (req, res) => {
   try {
-    const { ip, username, passwordTried } = req.body;
-    console.log(`[ALERT] New attack detected from IP: ${ip} | User: ${username} | Pass: ${passwordTried}`);
+    let { ip, username, passwordTried } = req.body;
+    
+    // Security Fix 1: IP Spoofing Prevention
+    // Ignore client-provided IP from UI. Rely on native network IP.
+    // In production (Vercel/Render), x-forwarded-for contains the real IP.
+    const networkIp = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress || ip;
+    
+    // Security Fix 2: Input Validation & Sanitization
+    if (typeof username !== 'string' || typeof passwordTried !== 'string') {
+      return res.status(400).json({ error: "Invalid payload format" });
+    }
+    username = username.substring(0, 100); // Prevent 50MB string payloads
+    passwordTried = passwordTried.substring(0, 100);
+
+    console.log(`[ALERT] New attack detected from IP: ${networkIp} | User: ${username} | Pass: ${passwordTried}`);
 
     // Step 1: Find the geographical location of the Hacker's IP
     let lat = 0, lon = 0, country = 'Unknown', city = 'Unknown';
     try {
       // Note: In local testing, IP will be 127.0.0.1 which has no location.
       // We will only call the API if it's not a local IP.
-      if (ip !== '127.0.0.1') {
-        const geoResponse = await axios.get(`http://ip-api.com/json/${ip}`);
+      if (networkIp !== '127.0.0.1' && networkIp !== '::1' && !networkIp.startsWith('192.168.')) {
+        const geoResponse = await axios.get(`http://ip-api.com/json/${networkIp}`);
         if (geoResponse.data.status === 'success') {
           lat = geoResponse.data.lat;
           lon = geoResponse.data.lon;
@@ -86,7 +99,7 @@ app.post('/api/attack', async (req, res) => {
 
     // Step 2: Create the attack record
     const newAttack = new Attack({
-      ip, username, passwordTried, country, city, lat, lon
+      ip: networkIp, username, passwordTried, country, city, lat, lon
     });
 
     // Step 3: Send the attack instantly to the React Frontend Dashboard (Doing this FIRST so UI always works)

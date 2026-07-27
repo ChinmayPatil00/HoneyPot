@@ -378,7 +378,7 @@ export default function Dashboard() {
                 attacks.slice(0, 3).map((attack, i) => {
                   const isBlocked = blacklistedIPs.includes(attack.ip);
                   return (
-                    <div key={i} className={`attack-card ${isBlocked ? 'blocked-card' : ''}`} onClick={() => setSelectedThreat(attack)}>
+                    <div key={attack._id || `${attack.timestamp}-${attack.ip}-${i}`} className={`attack-card ${isBlocked ? 'blocked-card' : ''}`} onClick={() => setSelectedThreat(attack)}>
                       <div className="attack-header">
                         <span className="ip">{attack.ip} {isBlocked && <span className="blocked-tag">[BLOCKED]</span>}</span>
                         <span className="time">{new Date(attack.timestamp).toLocaleTimeString()}</span>
